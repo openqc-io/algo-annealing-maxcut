@@ -1,0 +1,41 @@
+{
+  "slug": "annealing-maxcut",
+  "name": "MaxCut (Annealing)",
+  "version": "1.0.0",
+  "author": "openqc-team",
+  "license": "Apache-2.0",
+  "description": "Solve MaxCut graph partitioning via quantum/simulated annealing. Same problem as qaoa-maxcut but uses annealing instead of gate-based QAOA. Compare results across paradigms: gate-based (QAOA) vs annealing on the same graph. QUBO formulation: Q_{ij} = -w for cut edges.",
+  "owner": "openqc",
+  "scope": "catalog",
+  "access": "open",
+  "implementation_mode": "catalog_synced",
+  "industries": [
+    "foundational"
+  ],
+  "techniques": [
+    "annealing"
+  ],
+  "difficulty": "intermediate",
+  "computation_model": "annealing",
+  "algorithm_type": "annealing",
+  "qubit_count": 3,
+  "tags": [
+    "annealing",
+    "optimization",
+    "maxcut",
+    "graph",
+    "beginner"
+  ],
+  "metadata": {
+    "complexity_classical": "NP-hard (decision), O(2^n) brute force",
+    "complexity_quantum": "Annealing heuristic, no proven speedup for general graphs",
+    "year_introduced": 2001,
+    "references": [
+      "https://doi.org/10.1126/science.1057726"
+    ]
+  },
+  "status": "coming-soon",
+  "blockers": [
+    "Runnable circuit / template implementation pending."
+  ]
+}
