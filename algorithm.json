@@ -39,7 +39,7 @@
   "status": "available",
   "min_qubits": 2,
   "recommended_backends": [
-    "vortex-annealing-sim"
+    "openqc-annealing-sim"
   ],
   "input_schema": {
     "type": "object",
