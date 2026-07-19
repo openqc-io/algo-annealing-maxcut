@@ -15,6 +15,17 @@ See vortex_common.algorithm_executor.validate_template_ast.
 
 _DEFAULT_EDGES = [[0, 1], [1, 2], [2, 3], [3, 0]]
 
+# build()/interpret() run inline in vortex-job's event loop (no timeout) —
+# bound the QUBO/partition size up front.
+_MAX_EDGES = 10000
+
+
+def _fail(message):
+    """Abort with a descriptive server-side log line. The sandbox exposes
+    no exception classes, so raise via a KeyError carrying the message
+    (executor logs it; the API returns its generic failure envelope)."""
+    return {}[message]
+
 
 class AlgorithmTemplate:
 
@@ -35,12 +46,14 @@ class AlgorithmTemplate:
     def interpret(self, raw_result, input_data):
         result = raw_result if isinstance(raw_result, dict) else {}
         edges = _normalize_edges(input_data.get("edges", _DEFAULT_EDGES))
-        num_nodes = _num_nodes(edges)
         sample = result.get("best_sample", {})
 
-        # Decode the partition: node -> side 0 or side 1
+        # Decode the partition: node -> side 0 or side 1. Iterate the nodes
+        # that actually appear in edges (NOT range(max_index) — a single
+        # edge like [0, 10**9] must not turn into a billion-entry loop).
+        nodes = sorted({v for e in edges for v in e})
         partition = {}
-        for node in range(num_nodes):
+        for node in nodes:
             partition[str(node)] = 1 if sample.get(str(node), 0) == 1 else 0
 
         # Count edges actually cut by this assignment (honest re-check —
@@ -76,27 +89,34 @@ class AlgorithmTemplate:
 
 
 def _normalize_edges(edges):
-    """Coerce edges to a deduplicated list of [min, max] int pairs."""
+    """Coerce edges to a deduplicated list of [min, max] int pairs.
+
+    Malformed pairs are skipped (same degrade rule as the qaoa sibling
+    template); if nothing valid remains, fall back to the demo ring.
+    Oversize edge lists are rejected loudly.
+    """
     seen = set()
     clean = []
-    for pair in edges:
-        i = int(pair[0])
-        j = int(pair[1])
-        if i == j or i < 0 or j < 0:
-            continue
-        key = (min(i, j), max(i, j))
-        if key in seen:
-            continue
-        seen.add(key)
-        clean.append([key[0], key[1]])
-    return clean
-
-
-def _num_nodes(edges):
-    highest = -1
-    for i, j in edges:
-        highest = max(highest, i, j)
-    return highest + 1
+    if isinstance(edges, list):
+        if len(edges) > _MAX_EDGES:
+            _fail(f"annealing-maxcut: {len(edges)} edges exceeds the "
+                  f"{_MAX_EDGES}-edge limit")
+        for pair in edges:
+            if not (
+                isinstance(pair, (list, tuple)) and len(pair) == 2
+                and isinstance(pair[0], (int, float)) and isinstance(pair[1], (int, float))
+                and int(pair[0]) == pair[0] and int(pair[1]) == pair[1]
+            ):
+                continue
+            i, j = int(pair[0]), int(pair[1])
+            if i == j or i < 0 or j < 0:
+                continue
+            key = (min(i, j), max(i, j))
+            if key in seen:
+                continue
+            seen.add(key)
+            clean.append([key[0], key[1]])
+    return clean if clean else [list(e) for e in _DEFAULT_EDGES]
 
 
 def _maxcut_to_qubo(edges):
