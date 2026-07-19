@@ -7,7 +7,7 @@
 | | |
 |---|---|
 | Slug | `annealing-maxcut` |
-| Qubits | 3 |
+| Qubits | 4 |
 | Industries | foundational |
 | Techniques | annealing |
 | Difficulty | intermediate |
@@ -15,9 +15,27 @@
 | Access | `open` |
 | License | Apache-2.0 |
 
-## Circuit
+## How it works
 
-_Coming soon — runnable implementation pending._
+No circuit — this is an annealing algorithm. `template.py` emits a QUBO with
+energy = −(cut size): for each edge (i,j), `Q[i][i] -= 1`, `Q[j][j] -= 1`,
+`Q[i][j] += 2`. Simulated annealing (dimod, server-side on
+`vortex-annealing-sim`) minimises the energy, i.e. maximises the cut.
+
+**Default instance**: the same 4-node ring as the live `qaoa-maxcut` template
+(edges `[[0,1],[1,2],[2,3],[3,0]]`) so results can be compared across
+paradigms. The ring is bipartite, so the optimum cuts all 4 edges
+(best energy −4, partition `0101`/`1010`).
+
+**Inputs** (all optional — `{}` runs the demo):
+
+- `edges`: list of `[i, j]` pairs (custom graph)
+- `num_reads`: annealing samples (default 1000)
+
+**Output**: `partition`, `side_0`/`side_1`, `cut_edges`, `cut_size`,
+`num_edges` (a trivial upper bound on the max cut — reachable only for
+bipartite graphs), `cut_fraction`, `best_energy`, `total_reads`. The cut is
+recomputed from the best sample, not inferred from the reported energy.
 
 ## How to run
 

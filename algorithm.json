@@ -18,7 +18,7 @@
   "difficulty": "intermediate",
   "computation_model": "annealing",
   "algorithm_type": "annealing",
-  "qubit_count": 3,
+  "qubit_count": 4,
   "tags": [
     "annealing",
     "optimization",
@@ -32,10 +32,57 @@
     "year_introduced": 2001,
     "references": [
       "https://doi.org/10.1126/science.1057726"
-    ]
+    ],
+    "academic_intro": "MaxCut asks for a two-way split of a graph's nodes that cuts as many edges as possible. This template encodes it as a QUBO (energy = minus the cut size) and lets simulated annealing settle into a low-energy state.",
+    "expected_takeaway": "Compare with qaoa-maxcut on the identical 4-node ring: gate-based QAOA and annealing attack the same problem through different computation models."
   },
-  "status": "coming-soon",
-  "blockers": [
-    "Runnable circuit / template implementation pending."
-  ]
+  "status": "available",
+  "min_qubits": 2,
+  "recommended_backends": [
+    "vortex-annealing-sim"
+  ],
+  "input_schema": {
+    "type": "object",
+    "required": [],
+    "properties": {
+      "edges": {
+        "type": "array",
+        "description": "Graph edges as [i, j] pairs. Default: the 4-node ring [[0,1],[1,2],[2,3],[3,0]] \u2014 the same graph as qaoa-maxcut."
+      },
+      "num_reads": {
+        "type": "number",
+        "description": "Number of annealing samples (default 1000)"
+      }
+    }
+  },
+  "output_schema": {
+    "type": "object",
+    "properties": {
+      "partition": {
+        "type": "object"
+      },
+      "side_0": {
+        "type": "array"
+      },
+      "side_1": {
+        "type": "array"
+      },
+      "cut_edges": {
+        "type": "array"
+      },
+      "cut_size": {
+        "type": "number"
+      },
+      "num_edges": {
+        "type": "number"
+      },
+      "cut_fraction": {
+        "type": "number"
+      },
+      "best_energy": {
+        "type": "number"
+      }
+    }
+  },
+  "template_path": "template.py"
 }
